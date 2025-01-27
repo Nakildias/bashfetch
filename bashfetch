@@ -93,9 +93,11 @@ USED_PERCENTAGE=$(awk "BEGIN {printf \"%.0f%%\", ($USED_MB / $TOTAL_MB) * 100}")
 #CPU CORES
 CPU_CORES=$(nproc)
 
+if [ $VM != True ]; then
 #CPU TEMPERATURE AVG
 CPU_TEMP=$(cat /sys/class/thermal/thermal_zone*/temp | tail -n 1 )
 CPU_TEMP=$(awk "BEGIN {printf \"%.0f°C\", $CPU_TEMP / 1000}")
+fi
 
 # Initialize AMDGPU_PATH to empty
 AMDGPU_PATH=""
