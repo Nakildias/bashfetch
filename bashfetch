@@ -111,8 +111,9 @@ if [ -f "$hwmon/name" ]; then
 
     # Check if the device name is "amdgpu"
     if [ "$device_name" == "amdgpu" ]; then
-      # Extract the hwmon number from the path, removing / between hwmon and 3
-      hwmon_number=${hwmon##*/3}
+      # Extract the hwmon number from the path, removing / between hwmon and [0-9]
+      hwmon_number=${hwmon##/[0-9] }
+      #hwmon_number=${hwmon##*/3}
       AMDGPU_PATH=$hwmon_number
       SKIP_AMD_GPU=False
       break
