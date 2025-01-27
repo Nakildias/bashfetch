@@ -53,11 +53,11 @@ else
 fi
 
 # Assign the disk model to the DISK_MODEL variable
-if [ $DISK_MODEL != vda ]; then
+if [ "$DISK_MODEL" != "vda" ]; then
 DISK_MODEL=$(cat /sys/class/block/$DISK_MODEL/device/model)
 fi
 
-if [ $DISK_MODEL = "vda" ]; then
+if [ "$DISK_MODEL" = "vda" ]; then
 DISK_MODEL=Virtual\ Disk
 fi
 
