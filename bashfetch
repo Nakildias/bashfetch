@@ -102,14 +102,14 @@ for hwmon in /sys/class/hwmon/hwmon*; do
     if [ "$device_name" == "amdgpu" ]; then
       # Extract the hwmon number from the path, removing / between hwmon and 3
       hwmon_number=${hwmon##*/3}
-
       AMDGPU_PATH=$hwmon_number
-
+      SKIP_AMD_GPU=False
       break
     fi
   fi
 done
 
+if [ "$SKIP_AMD_GPU" == "False" ]; then
 #GPU TEMPERATURE AMD
 GPU_TEMP_AMD=$(cat $AMDGPU_PATH/temp1_input)
 GPU_TEMP_AMD=$(awk "BEGIN {printf \"%.0f°C\", $GPU_TEMP_AMD / 1000}")
@@ -120,7 +120,7 @@ GPU_USED_MEM_AMD=$(cat $AMDGPU_PATH/device/mem_info_vram_used)
 GPU_TOTAL_MEM_AMD=$(cat $AMDGPU_PATH/device/mem_info_vram_total)
 AMD_VRAM_USED_GIB=$(awk "BEGIN {printf \"%.0f GiB\", $GPU_USED_MEM_AMD / 1077000000}")
 AMD_VRAM_TOTAL_GIB=$(awk "BEGIN {printf \"%.0f GiB\", $GPU_TOTAL_MEM_AMD / 1077000000}")
-
+fi
 
 #GPU TEMPERATURE NVIDIA
 GPU_TEMP_NVIDIA=$(nvidia-smi --query-gpu=temperature.gpu --format=csv | tail -n 1 )
@@ -171,6 +171,7 @@ echo " Temp     ❯ $GPU_TEMP_NVIDIA"
 echo " Usage    ❯ $GPU_USAGE_NVIDIA"
 echo " VRAM     ❯ $GPU_USED_MEM_NVIDIA / $GPU_TOTAL_MEM_NVIDIA"
 # Check if an AMDGPU device was found
+if [ "$SKIP_AMD_GPU" == "False" ]; then
 if [ -n "$AMDGPU_PATH" ]; then
 
 GPU_NAME_AMD=$(cat ~/.amdgpuname)
@@ -188,4 +189,5 @@ echo "GPU      ❯ $GPU_NAME_AMD"
 echo " Temp     ❯ $GPU_TEMP_AMD"
 echo " Usage    ❯ $GPU_USAGE_AMD %"
 echo " VRAM     ❯ $AMD_VRAM_USED_GIB / $AMD_VRAM_TOTAL_GIB"
+fi
 fi
