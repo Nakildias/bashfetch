@@ -8,6 +8,15 @@ if [ ! -f ~/.meminfo ]; then
     echo "RAM details saved to ~/.meminfo"
 fi
 
+# Check if nvidia-smi is available
+if ! command -v nvidia-smi &> /dev/null; then
+#  echo "Error: nvidia-smi not found. Skipping NVIDIA GPU check."
+  SKIP_NVIDIA_GPU="True"
+else
+  SKIP_NVIDIA_GPU="False"
+fi
+
+
 USERNAME=$(whoami)
 . /etc/os-release
 KERNEL=$(uname -r)
@@ -53,13 +62,13 @@ DISK_MODEL=Virtual\ Disk
 fi
 
 # Read the contents of ~/.gpuinfo file
-while IFS= read -r line; do
+#while IFS= read -r line; do
     # Check if the string "*-display" is present in the current line
-    if [[ "$line" == *"-display"* ]]; then
+#    if [[ "$line" == *"-display"* ]]; then
         # Increment GPU_COUNT by 1 for each occurrence
-        ((GPU_COUNT++))
-    fi
-done < ~/.gpuinfo
+#        ((GPU_COUNT++))
+#    fi
+#done < ~/.gpuinfo
 
 #RAM
 # Use `free` to get memory info in MB
@@ -122,6 +131,7 @@ AMD_VRAM_USED_GIB=$(awk "BEGIN {printf \"%.0f GiB\", $GPU_USED_MEM_AMD / 1077000
 AMD_VRAM_TOTAL_GIB=$(awk "BEGIN {printf \"%.0f GiB\", $GPU_TOTAL_MEM_AMD / 1077000000}")
 fi
 
+if [ "$SKIP_NVIDIA_GPU" == "False" ]; then
 #GPU TEMPERATURE NVIDIA
 GPU_TEMP_NVIDIA=$(nvidia-smi --query-gpu=temperature.gpu --format=csv | tail -n 1 )
 GPU_TEMP_NVIDIA=$(awk "BEGIN {printf \"%.0f°C\", $GPU_TEMP_NVIDIA / 1}")
@@ -133,6 +143,8 @@ GPU_USAGE_NVIDIA=$(nvidia-smi --query-gpu=utilization.gpu --format=csv | tail -n
 GPU_USED_MEM_NVIDIA=$(nvidia-smi --query-gpu=memory.used --format=csv | tail -n 1 )
 #TOTAL MEMORY NVIDIA (MiB)
 GPU_TOTAL_MEM_NVIDIA=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 )
+fi
+
 
 #RAM VENDOR AND SPEED
 MEMORY_VENDOR=$(grep "Manufacturer:" ~/.meminfo | head -n 1 | cut -c 15-)
@@ -165,12 +177,14 @@ echo "  Max      ❯ $CPU_FREQUENCY_MAX Mhz"
 echo "  Min      ❯ $CPU_FREQUENCY_MIN Mhz"
 fi
 echo ""
-#echo "GPU 1    ❯ $INSTALLED_GPU_1"
+if [ "$SKIP_NVIDIA_GPU" == "False" ]; then
 echo "GPU      ❯ $GPU_NAME_NVIDIA"
 echo " Temp     ❯ $GPU_TEMP_NVIDIA"
 echo " Usage    ❯ $GPU_USAGE_NVIDIA"
 echo " VRAM     ❯ $GPU_USED_MEM_NVIDIA / $GPU_TOTAL_MEM_NVIDIA"
 # Check if an AMDGPU device was found
+fi
+
 if [ "$SKIP_AMD_GPU" == "False" ]; then
 if [ -n "$AMDGPU_PATH" ]; then
 
