@@ -130,8 +130,8 @@ GPU_USAGE_AMD=$(cat $AMDGPU_PATH/device/gpu_busy_percent)
 #VRAM AMD
 GPU_USED_MEM_AMD=$(cat $AMDGPU_PATH/device/mem_info_vram_used)
 GPU_TOTAL_MEM_AMD=$(cat $AMDGPU_PATH/device/mem_info_vram_total)
-AMD_VRAM_USED_GIB=$(awk "BEGIN {printf \"%.0f GiB\", $GPU_USED_MEM_AMD / 1077000000}")
-AMD_VRAM_TOTAL_GIB=$(awk "BEGIN {printf \"%.0f GiB\", $GPU_TOTAL_MEM_AMD / 1077000000}")
+AMD_VRAM_USED_GIB=$(awk "BEGIN {printf \"%.0f MiB\", $GPU_USED_MEM_AMD / 1125000}")
+AMD_VRAM_TOTAL_GIB=$(awk "BEGIN {printf \"%.0f MiB\", $GPU_TOTAL_MEM_AMD / 1125000}")
 fi
 
 if [ "$SKIP_NVIDIA_GPU" == "False" ]; then
