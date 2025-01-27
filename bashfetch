@@ -1,0 +1,118 @@
+#!/bin/bash
+# https://github.com/Nakildias/bashfetch
+# Written by Nakildias
+# Dependencies bc, lshw,
+# Early development since 27th January 2025
+# Graphics card detection not supported ATM but will be soon
+
+# Check if ~/.meminfo exists
+if [ ! -f ~/.meminfo ]; then
+    echo "File ~/.meminfo does not exist. Creating it now..."
+    echo "Root privilege is required to read ram details in dmidecode"
+    sudo dmidecode --type 17 >> ~/.meminfo
+    echo "RAM details saved to ~/.meminfo"
+fi
+
+USERNAME=$(whoami)
+. /etc/os-release
+KERNEL=$(uname -r)
+CPU_MODEL=$(lscpu | grep "Model name" | cut -c 39-)
+CPU_FREQUENCY_MAX=$(lscpu | grep "max MHz" | cut -c 39-)
+CPU_FREQUENCY_MIN=$(lscpu | grep "min MHz" | cut -c 39-)
+CPU_FREQUENCY_CUR=$(lscpu | grep "scaling MHz" | cut -c 39-)
+CPU_FREQUENCY_CUR=$(echo "$CPU_FREQUENCY_CUR" | sed 's/%//g')
+CPU_FREQUENCY_CUR_BC=$(echo "$CPU_FREQUENCY_CUR / 100 * $CPU_FREQUENCY_MAX" | bc -l)
+CPU_FREQUENCY_CUR_BC=$(echo "$CPU_FREQUENCY_CUR_BC" |  sed 's/.000000//g')
+CPU_FREQUENCY_MAX=$(echo "$CPU_FREQUENCY_MAX" |  sed 's/.0000//g')
+CPU_FREQUENCY_MIN=$(echo "$CPU_FREQUENCY_MIN" |  sed 's/.0000//g')
+
+#DISK
+ROOT_PART_INFO=$(df -h / | tail -1)
+
+TOTAL_SIZE=$(echo $ROOT_PART_INFO | awk '{print $2}')
+USED_SPACE=$(echo $ROOT_PART_INFO | awk '{print $3}')
+FREE_SPACE=$(echo $ROOT_PART_INFO | awk '{print $4}')
+USAGE_PERCENT=$(echo $ROOT_PART_INFO | awk '{print $5}')
+
+#DISK INFO
+
+# Find the device containing the root filesystem
+ROOT_DEVICE=$(findmnt -n -o SOURCE /)
+
+# Extract the base disk name from the device
+if [[ "$ROOT_DEVICE" =~ ^(/dev/(sd[a-z]|vd[a-z]|nvme[0-9]n[0-9]|xvd[a-z])) ]]; then
+  DISK_MODEL=$(basename "$BASH_REMATCH")
+else
+  echo "Unable to determine the root disk." >&2
+fi
+
+# Assign the disk model to the DISK_MODEL variable
+
+DISK_MODEL=$(cat /sys/class/block/$DISK_MODEL/device/model)
+
+#GPU (WORK IN PROGRESS)
+#INSTALLED_GPU_NVIDIA=$(lspci | grep "VGA compatible controller: NV" | cut -c 61-)
+#INSTALLED_GPU_AMD=$(lspci | grep "VGA compatible controller: Adv" | cut -c 83-)
+#INSTALLED_GPU_INTEL=$(lspci | grep "VGA compatible controller: Int" | cut -c 36-)
+
+
+#MANUAL
+#INSTALLED_GPU_NVIDIA="NVIDIA RTX 4090         (Dedicated)      (Enabled)"
+#INSTALLED_GPU_AMD="AMD Radeon RX 7900 XTX  (Dedicated)      (Enabled)"
+#INSTALLED_GPU_INTEL="Intel UHD Graphics 770  (Integrated)     (Disabled)"
+
+#RAM
+# Use `free` to get memory info in MB
+MEMORY_INFO=$(free --mega | grep Mem)
+
+# Extract values in MB
+TOTAL_MB=$(echo $MEMORY_INFO | awk '{print $2}')
+USED_MB=$(echo $MEMORY_INFO | awk '{print $3}')
+AVAILABLE_MB=$(echo $MEMORY_INFO | awk '{print $7}')
+
+# Calculate free RAM: free = available RAM
+FREE_MB=$AVAILABLE_MB
+
+# Convert values to GiB with two decimal points
+TOTAL_GIB=$(awk "BEGIN {printf \"%.2f GiB\", $TOTAL_MB / 1073.7}")
+USED_GIB=$(awk "BEGIN {printf \"%.2f GiB\", $USED_MB / 1073.7}")
+FREE_GIB=$(awk "BEGIN {printf \"%.2f GiB\", $FREE_MB / 1073.7}")
+
+# Calculate percentage of used RAM
+USED_PERCENTAGE=$(awk "BEGIN {printf \"%.0f%%\", ($USED_MB / $TOTAL_MB) * 100}")
+
+#CPU CORES
+CPU_CORES=$(nproc)
+
+#MEMORY VENDOR AND SPEED
+MEMORY_VENDOR=$(grep "Manufacturer:" ~/.meminfo | head -n 1 | cut -c 15-)
+MEMORY_SPEED=$(grep "Speed:" ~/.meminfo | head -n 1 | cut -c 9-)
+MEMORY_TYPE=$(grep "Type:" ~/.meminfo | head -n 1 | cut -c 8-)
+
+
+echo "Distro   ❯ $NAME ($HOSTTYPE)"
+echo "Kernel   ❯ $KERNEL"
+echo "Shell    ❯ $SHELL $BASH_VERSION"
+echo ""
+echo "Session  ❯ $XDG_SESSION_TYPE"
+echo " User     ❯ $USERNAME ($UID)"
+echo " Hostname ❯ $HOSTNAME"
+echo " DE       ❯ $XDG_CURRENT_DESKTOP"
+echo " Terminal ❯ $(ps -o comm= -p "$(($(ps -o ppid= -p "$(($(ps -o sid= -p "$$")))")))")"
+echo ""
+echo "Main SSD ❯ $DISK_MODEL"
+echo " Usage    ❯ $USED_SPACE / $TOTAL_SIZE  ($USAGE_PERCENT)"
+echo "  Free     ❯ $FREE_SPACE"
+echo ""
+echo "Memory   ❯" $MEMORY_VENDOR $MEMORY_TYPE $MEMORY_SPEED
+echo " Usage    ❯ $USED_GIB / $TOTAL_GIB  ($USED_PERCENTAGE)"
+echo "  Free     ❯ $FREE_GIB"
+echo ""
+echo "CPU      ❯ $CPU_MODEL ($CPU_CORES)"
+echo " Current  ❯ $CPU_FREQUENCY_CUR_BC Mhz"
+echo "  Max      ❯ $CPU_FREQUENCY_MAX Mhz"
+echo "  Min      ❯ $CPU_FREQUENCY_MIN Mhz"
+echo ""
+#echo "GPU 1    ❯ $INSTALLED_GPU_NVIDIA"
+#echo "GPU 2    ❯ $INSTALLED_GPU_AMD"
+#echo "GPU 3    ❯ $INSTALLED_GPU_INTEL"
