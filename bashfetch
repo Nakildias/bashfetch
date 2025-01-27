@@ -105,20 +105,30 @@ AMDGPU_PATH=""
 # Loop through each hwmon directory
 for hwmon in /sys/class/hwmon/hwmon*; do
   # Check if the "name" file exists
-  if [ -f "$hwmon/name" ]; then
+if [ -f "$hwmon/name" ]; then
     # Read the content of the "name" file
     device_name=$(cat "$hwmon/name")
+if [ "$device_name" == "amdgpu" ]; then
+  # Extract the hwmon number from the path, removing any '/' characters
+  hwmon_number=${hwmon##*/}
+  hwmon_number=${hwmon_number//\//}
+  AMDGPU_PATH=$hwmon_number
+  SKIP_AMD_GPU=False
+  break
+fi
+fi
+done
 
     # Check if the device name is "amdgpu"
-    if [ "$device_name" == "amdgpu" ]; then
+    #if [ "$device_name" == "amdgpu" ]; then
       # Extract the hwmon number from the path, removing / between hwmon and 3
-      hwmon_number=${hwmon##*/3}
-      AMDGPU_PATH=$hwmon_number
-      SKIP_AMD_GPU=False
-      break
-    fi
-  fi
-done
+      #hwmon_number=${hwmon##*/3}
+      #AMDGPU_PATH=$hwmon_number
+      #SKIP_AMD_GPU=False
+      #break
+    #fi
+  #fi
+#done
 
 if [ "$SKIP_AMD_GPU" == "False" ]; then
 #GPU TEMPERATURE AMD
