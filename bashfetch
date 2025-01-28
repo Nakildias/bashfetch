@@ -1,124 +1,50 @@
 #!/bin/bash
+
 VM=False
-# Check if ~/.meminfo exists
-if [ ! -f ~/.meminfo ]; then
-    echo "File ~/.meminfo does not exist. Creating it now..."
-    echo "Root privilege is required to read ram details in dmidecode"
-    sudo dmidecode --type 17 >> ~/.meminfo
-    echo "RAM details saved to ~/.meminfo"
+CPU_USAGE_ACTIVE=True #+0.300s of render if True
+DEBUG=False
+APATH=~/.config/bashfetch/amdgpuname
+MPATH=~/.config/bashfetch/meminfo
+
+#RAM INFO ROOTLESS FETCHING
+if [ ! -f $MPATH ]; then
+echo "Creating ~/.config/bashfetch directory"
+mkdir ~/.config/bashfetch
+echo "File $MPATH does not exist. Creating it now..."
+echo "Root privilege is required to read ram details in dmidecode"
+sudo dmidecode --type 17 >> $MPATH
+echo "RAM details saved to $MPATH"
 fi
 
-# Check if nvidia-smi is available
+#EVERYTHING GPU FETCH RELATED GOES HERE
+
+#DOES SYSTEM HAVE NVIDIA-SMI?
 if ! command -v nvidia-smi &> /dev/null; then
-#  echo "Error: nvidia-smi not found. Skipping NVIDIA GPU check."
-  SKIP_NVIDIA_GPU="True"
+SKIP_NVIDIA_GPU="True"
 else
-  SKIP_NVIDIA_GPU="False"
+SKIP_NVIDIA_GPU="False"
 fi
 
-
-USERNAME=$(whoami)
-. /etc/os-release
-KERNEL=$(uname -r)
-CPU_MODEL=$(lscpu | grep "Model name" | cut -c 39-)
-if [ $VM != True ]; then
-CPU_FREQUENCY_MAX=$(lscpu | grep "max MHz" | cut -c 39-)
-CPU_FREQUENCY_MIN=$(lscpu | grep "min MHz" | cut -c 39-)
-CPU_FREQUENCY_CUR=$(lscpu | grep "scaling MHz" | cut -c 39-)
-CPU_FREQUENCY_CUR=$(echo "$CPU_FREQUENCY_CUR" | sed 's/%//g')
-CPU_FREQUENCY_CUR_BC=$(echo "$CPU_FREQUENCY_CUR / 100 * $CPU_FREQUENCY_MAX" | bc -l)
-CPU_FREQUENCY_CUR_BC=$(echo "$CPU_FREQUENCY_CUR_BC" |  sed 's/.000000//g')
-CPU_FREQUENCY_MAX=$(echo "$CPU_FREQUENCY_MAX" |  sed 's/.0000//g')
-CPU_FREQUENCY_MIN=$(echo "$CPU_FREQUENCY_MIN" |  sed 's/.0000//g')
-fi
-
-#DISK
-ROOT_PART_INFO=$(df -h / | tail -1)
-
-TOTAL_SIZE=$(echo $ROOT_PART_INFO | awk '{print $2}')
-USED_SPACE=$(echo $ROOT_PART_INFO | awk '{print $3}')
-FREE_SPACE=$(echo $ROOT_PART_INFO | awk '{print $4}')
-USAGE_PERCENT=$(echo $ROOT_PART_INFO | awk '{print $5}')
-
-#DISK INFO
-
-# Find the device containing the root filesystem
-ROOT_DEVICE=$(findmnt -n -o SOURCE /)
-
-# Extract the base disk name from the device
-if [[ "$ROOT_DEVICE" =~ ^(/dev/(sd[a-z]|vd[a-z]|nvme[0-9]n[0-9]|xvd[a-z])) ]]; then
-  DISK_MODEL=$(basename "$BASH_REMATCH")
-else
-  echo "Unable to determine the root disk." >&2
-fi
-
-# Assign the disk model to the DISK_MODEL variable
-if [ "$DISK_MODEL" != "vda" ]; then
-DISK_MODEL=$(cat /sys/class/block/$DISK_MODEL/device/model)
-fi
-
-if [ "$DISK_MODEL" = "vda" ]; then
-DISK_MODEL=Virtual\ Disk
-fi
-
-# Read the contents of ~/.gpuinfo file
-#while IFS= read -r line; do
-    # Check if the string "*-display" is present in the current line
-#    if [[ "$line" == *"-display"* ]]; then
-        # Increment GPU_COUNT by 1 for each occurrence
-#        ((GPU_COUNT++))
-#    fi
-#done < ~/.gpuinfo
-
-#RAM
-# Use `free` to get memory info in MB
-MEMORY_INFO=$(free --mega | grep Mem)
-
-# Extract values in MB
-TOTAL_MB=$(echo $MEMORY_INFO | awk '{print $2}')
-USED_MB=$(echo $MEMORY_INFO | awk '{print $3}')
-AVAILABLE_MB=$(echo $MEMORY_INFO | awk '{print $7}')
-
-# Calculate free RAM: free = available RAM
-FREE_MB=$AVAILABLE_MB
-
-# Convert values to GiB with two decimal points
-TOTAL_GIB=$(awk "BEGIN {printf \"%.2f GiB\", $TOTAL_MB / 1073.7}")
-USED_GIB=$(awk "BEGIN {printf \"%.2f GiB\", $USED_MB / 1073.7}")
-FREE_GIB=$(awk "BEGIN {printf \"%.2f GiB\", $FREE_MB / 1073.7}")
-
-# Calculate percentage of used RAM
-USED_PERCENTAGE=$(awk "BEGIN {printf \"%.0f%%\", ($USED_MB / $TOTAL_MB) * 100}")
-
-#CPU CORES
-CPU_CORES=$(nproc)
-
-if [ $VM != True ]; then
-#CPU TEMPERATURE AVG
-CPU_TEMP=$(cat /sys/class/thermal/thermal_zone*/temp | tail -n 1 )
-CPU_TEMP=$(awk "BEGIN {printf \"%.0f°C\", $CPU_TEMP / 1000}")
-fi
-
-# Initialize AMDGPU_PATH to empty
+#INIT AMDGPU_PATH TO EMPTY
 AMDGPU_PATH=""
 
-# Loop through each hwmon directory
+#Loop through each hwmon directory
 for hwmon in /sys/class/hwmon/hwmon*; do
-  # Check if the "name" file exists
+#Check if the "name" file exists
 if [ -f "$hwmon/name" ]; then
-    # Read the content of the "name" file
-    device_name=$(cat "$hwmon/name")
+#Read the content of the "name" file
+device_name=$(cat "$hwmon/name")
 
-    # Check if the device name is "amdgpu"
-    if [ "$device_name" == "amdgpu" ]; then
-      # Extract the hwmon number from the path, removing / between hwmon and [0-9]
-      hwmon_number=${hwmon##/[0-9] }
-      #hwmon_number=${hwmon##*/3}
-      AMDGPU_PATH=$hwmon_number
-      SKIP_AMD_GPU=False
-      break
-    fi
-  fi
+#Check if the device name is "amdgpu"
+if [ "$device_name" == "amdgpu" ]; then
+#Extract the hwmon number from the path, removing / between hwmon and [0-9]
+hwmon_number=${hwmon##/[0-9] }
+#hwmon_number=${hwmon##*/3}
+AMDGPU_PATH=$hwmon_number
+SKIP_AMD_GPU=False
+break
+fi
+fi
 done
 
 if [ "$SKIP_AMD_GPU" == "False" ]; then
@@ -148,13 +74,93 @@ GPU_USED_MEM_NVIDIA=$(nvidia-smi --query-gpu=memory.used --format=csv | tail -n 
 GPU_TOTAL_MEM_NVIDIA=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -n 1 )
 fi
 
+#FETCH CURRENT USER
+USERNAME=$(whoami)
+
+#FETCH OS INFORMATIONS
+. /etc/os-release
+
+#FETCH KERNEL VERSION
+KERNEL=$(uname -r)
+
+#FETCH CPU INFO            CHANGE THE CUT VALUE IF CPU NAME IS PARTIALY ERASED
+CPU_MODEL=$(lscpu | grep "Model name" | cut -c 39-)
+
+#FETCH EXTRA CPU INFO FOR BAREMETAL SYSTEMS
+if [ $VM != True ]; then
+CPU_FREQUENCY_MAX=$(lscpu | grep "max MHz" | cut -c 39-)
+CPU_FREQUENCY_MIN=$(lscpu | grep "min MHz" | cut -c 39-)
+CPU_FREQUENCY_CUR=$(lscpu | grep "scaling MHz" | cut -c 39-)
+CPU_FREQUENCY_CUR=$(echo "$CPU_FREQUENCY_CUR" | sed 's/%//g')
+CPU_FREQUENCY_CUR_BC=$(echo "$CPU_FREQUENCY_CUR / 100 * $CPU_FREQUENCY_MAX" | bc -l)
+CPU_FREQUENCY_CUR_BC=$(echo "$CPU_FREQUENCY_CUR_BC" |  sed 's/.000000//g')
+CPU_FREQUENCY_MAX=$(echo "$CPU_FREQUENCY_MAX" |  sed 's/.0000//g')
+CPU_FREQUENCY_MIN=$(echo "$CPU_FREQUENCY_MIN" |  sed 's/.0000//g')
+fi
+
+#FETCH "/" DISK INFORMATIONS
+ROOT_PARTITION_DISK=$(df -h / | tail -1)
+TOTAL_SIZE=$(echo $ROOT_PARTITION_DISK | awk '{print $2}')
+USED_SPACE=$(echo $ROOT_PARTITION_DISK | awk '{print $3}')
+FREE_SPACE=$(echo $ROOT_PARTITION_DISK | awk '{print $4}')
+USAGE_PERCENT=$(echo $ROOT_PARTITION_DISK | awk '{print $5}')
+
+#FIND PARTITION CONTAINING ROOT PARITION ON $ROOT_PARTITION_DISK
+ROOT_PARTITION_ON_DISK=$(findmnt -n -o SOURCE /)
+
+#TRANSFORM DRIVE NAME TO BE USABLE (supports sd nvme vda xvd drives)
+if [[ "$ROOT_PARTITION_ON_DISK" =~ ^(/dev/(sd[a-z]|vd[a-z]|nvme[0-9]n[0-9]|xvd[a-z])) ]]; then
+  DISK_MODEL=$(basename "$BASH_REMATCH")
+else
+  echo "Unable to determine the root disk." >&2
+fi
+
+#FETCH DISK MODEL from /sys/class/block/$DISK_MODEL/device/model
+if [ "$DISK_MODEL" != "vda" ]; then
+DISK_MODEL=$(cat /sys/class/block/$DISK_MODEL/device/model)
+fi
+#SET DISK_MODEL TO "Virtual Disk" IF ON A VM WITH VDA DISK
+if [ "$DISK_MODEL" = "vda" ]; then
+DISK_MODEL=Virtual\ Disk
+fi
+
+#RAM SECTION
+#FETCHING FREE RAM USING "free" IN MB
+MEMORY_INFO=$(free --mega | grep Mem)
+
+#SET RAM VALUES FOR TOTAL, USED, FREE IN MB
+TOTAL_RAM_MB=$(echo $MEMORY_INFO | awk '{print $2}')
+USED_RAM_MB=$(echo $MEMORY_INFO | awk '{print $3}')
+FREE_RAM_MB=$(echo $MEMORY_INFO | awk '{print $7}')
+
+#CONVERT RAM INFO FROM MB TO GiB
+TOTAL_GIB=$(awk "BEGIN {printf \"%.2f GiB\", $TOTAL_RAM_MB / 1073.7}")
+USED_GIB=$(awk "BEGIN {printf \"%.2f GiB\", $USED_RAM_MB / 1073.7}")
+FREE_GIB=$(awk "BEGIN {printf \"%.2f GiB\", $FREE_RAM_MB / 1073.7}")
+
+#CALCULATING USED RAM / TOTAL RAM * 100 FOR PERCENTAGE
+USED_PERCENTAGE=$(awk "BEGIN {printf \"%.0f%%\", ($USED_RAM_MB / $TOTAL_RAM_MB) * 100}")
+
+#FETCH CPU CORES & USAGE
+CPU_CORES=$(nproc)
+if [ $CPU_USAGE_ACTIVE = True ]; then
+TOP_OUTPUT=$(top -bn1 | grep "Cpu(s)")
+IDLE_PERCENT=$(echo "$TOP_OUTPUT" | awk '{print $8}' | sed 's/%id,//')
+CPU_USAGE=$(bc -l <<< "scale=2; 100 - $IDLE_PERCENT")
+fi
+
+#FETCH CPU TEMP (DISABLED FOR VMs)
+if [ $VM != True ]; then
+CPU_TEMP=$(cat /sys/class/thermal/thermal_zone*/temp | tail -n 1 )
+CPU_TEMP=$(awk "BEGIN {printf \"%.0f°C\", $CPU_TEMP / 1000}")
+fi
 
 #RAM VENDOR AND SPEED
-MEMORY_VENDOR=$(grep "Manufacturer:" ~/.meminfo | head -n 1 | cut -c 15-)
-MEMORY_SPEED=$(grep "Speed:" ~/.meminfo | head -n 1 | cut -c 9-)
-MEMORY_TYPE=$(grep "Type:" ~/.meminfo | head -n 1 | cut -c 8-)
+MEMORY_VENDOR=$(grep "Manufacturer:" $MPATH | head -n 1 | cut -c 15-)
+MEMORY_SPEED=$(grep "Speed:" $MPATH | head -n 1 | cut -c 9-)
+MEMORY_TYPE=$(grep "Type:" $MPATH | head -n 1 | cut -c 8-)
 
-
+#DISPLAY
 echo "Distro   ❯ $NAME ($HOSTTYPE)"
 echo "Kernel   ❯ $KERNEL"
 echo "Shell    ❯ $SHELL $BASH_VERSION"
@@ -175,9 +181,13 @@ echo "  Free     ❯ $FREE_GIB"
 echo ""
 echo "CPU      ❯ $CPU_MODEL ($CPU_CORES)"
 if [ $VM != True ]; then
-echo " Current  ❯ $CPU_FREQUENCY_CUR_BC Mhz $CPU_TEMP"
-echo "  Max      ❯ $CPU_FREQUENCY_MAX Mhz"
-echo "  Min      ❯ $CPU_FREQUENCY_MIN Mhz"
+echo " Temp     ❯ $CPU_TEMP"
+if [ $CPU_USAGE_ACTIVE = True ]; then
+echo " Usage    ❯ $CPU_USAGE%"
+fi
+echo " Freq     ❯ $CPU_FREQUENCY_CUR_BC Mhz"
+#echo "  Max      ❯ $CPU_FREQUENCY_MAX Mhz"
+#echo "  Min      ❯ $CPU_FREQUENCY_MIN Mhz"
 fi
 echo ""
 if [ "$SKIP_NVIDIA_GPU" == "False" ]; then
@@ -191,16 +201,16 @@ fi
 if [ "$SKIP_AMD_GPU" == "False" ]; then
 if [ -n "$AMDGPU_PATH" ]; then
 
-GPU_NAME_AMD=$(cat ~/.amdgpuname)
+GPU_NAME_AMD=$(cat $APATH)
 
 if [ -n "$GPU_NAME_AMD" ]; then
 echo ""
 else
-touch ~/.amdgpuname
+touch $APATH
 echo "Example : Radeon RX 7900 XT"
 echo "Enter your AMD GPU model: "
 read gpu_model
-printf "$gpu_model" >> ~/.amdgpuname
+printf "$gpu_model" >> $APATH
 fi
 echo "GPU      ❯ $GPU_NAME_AMD"
 echo " Temp     ❯ $GPU_TEMP_AMD"
