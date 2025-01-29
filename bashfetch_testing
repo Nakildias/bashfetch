@@ -90,7 +90,7 @@ GPU_NAME_AMD=$(glxinfo | grep "Device" | sed 's/ (.*//' | cut -c 13-)
 
 fetch_intel() {
 #INTEL INFO VARIABLES
-GPU_NAME_INTEL=$(glxinfo | grep "Device" | sed 's/ (.*//' | cut -c 13-)
+GPU_NAME_INTEL=$(glxinfo | grep "Device" | sed 's/ (.*//' | cut -c 18-)
 }
 
 #DETECT GPUS
@@ -183,7 +183,7 @@ amd_gpu_color() {
 }
 
 intel_gpu_color() {
-    echo "INTEL GPU Informations"
+    echo "Intel GPU Informations"
     echo "Model    $S $GPU_NAME_INTEL"
 }
 
