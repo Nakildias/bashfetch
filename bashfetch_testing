@@ -47,6 +47,15 @@ RAM_USED_GIB=$(awk "BEGIN {printf \"%.2f GiB\", $RAM_USED_MB / 1073.7}")
 RAM_FREE_GIB=$(awk "BEGIN {printf \"%.2f GiB\", $RAM_FREE_MB / 1073.7}")
 RAM_USAGE="$RAM_USED_GIB / $RAM_TOTAL_GIB"
 RAM_USAGE_PERCENTAGE=$(awk "BEGIN {printf \"%.0f%%\", ($RAM_USED_MB / $RAM_TOTAL_MB) * 100}")
+#RAM INFO ROOTLESS FETCHING
+if [ ! -f $MPATH ]; then
+echo "Creating ~/.config/bashfetch directory"
+mkdir ~/.config/bashfetch
+echo "File $MPATH does not exist. Creating it now..."
+echo "Root privilege is required to read ram details in dmidecode"
+sudo dmidecode --type 17 >> $MPATH
+echo "RAM details saved to $MPATH"
+fi
 
 #DISK INFO VARIABLES
 DISK_USAGE=$(df /)
