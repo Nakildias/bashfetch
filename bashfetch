@@ -143,10 +143,14 @@ USED_PERCENTAGE=$(awk "BEGIN {printf \"%.0f%%\", ($USED_RAM_MB / $TOTAL_RAM_MB) 
 
 #FETCH CPU CORES & USAGE
 CPU_CORES=$(nproc)
-if [ $CPU_USAGE_ACTIVE = True ]; then
+if [ "$CPU_USAGE_ACTIVE" = "True" ]; then
 TOP_OUTPUT=$(top -bn1 | grep "Cpu(s)")
-IDLE_PERCENT=$(echo "$TOP_OUTPUT" | awk '{print $8}' | sed 's/%id,//')
-CPU_USAGE=$(bc -l <<< "scale=2; 100 - $IDLE_PERCENT")
+IDLE_PERCENT=$(echo "$TOP_OUTPUT" | awk '{print $8}' | sed 's/,/./')  # Fix decimal format
+if [[ "$IDLE_PERCENT" =~ ^[0-9]+(\.[0-9]+)?$ ]]; then  # Ensure it's a valid number
+CPU_USAGE=$(echo "scale=2; 100 - $IDLE_PERCENT" | bc)
+else
+CPU_USAGE=0  # Fallback value in case of an issue
+fi
 fi
 
 #FETCH CPU TEMP (DISABLED FOR VMs)
