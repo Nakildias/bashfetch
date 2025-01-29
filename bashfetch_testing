@@ -4,7 +4,7 @@
 . /etc/os-release
 
 #OPTIONS
-COLORS=True
+COLORS=False
 VM=False
 
 #STYLE VARIABLES
@@ -47,7 +47,8 @@ RAM_USED_GIB=$(awk "BEGIN {printf \"%.2f GiB\", $RAM_USED_MB / 1073.7}")
 RAM_FREE_GIB=$(awk "BEGIN {printf \"%.2f GiB\", $RAM_FREE_MB / 1073.7}")
 RAM_USAGE="$RAM_USED_GIB / $RAM_TOTAL_GIB"
 RAM_USAGE_PERCENTAGE=$(awk "BEGIN {printf \"%.0f%%\", ($RAM_USED_MB / $RAM_TOTAL_MB) * 100}")
-#RAM INFO ROOTLESS FETCHING
+
+#RAM INFO ROOTLESS FETCHING (RUNS ONCE)
 if [ ! -f $MPATH ]; then
 echo "Creating ~/.config/bashfetch directory"
 mkdir ~/.config/bashfetch
@@ -87,10 +88,13 @@ AMD_VRAM_TOTAL_GIB=$(awk "BEGIN {printf \"%.0f MiB\", $GPU_TOTAL_MEM_AMD / 11250
 GPU_NAME_AMD=$(glxinfo | grep "Device" | sed 's/ (.*//' | cut -c 13-)
 }
 
+fetch_intel() {
+#INTEL INFO VARIABLES
+GPU_NAME_INTEL=$(glxinfo | grep "Device" | sed 's/ (.*//' | cut -c 13-)
+}
+
 #DETECT GPUS
 detect_gpus() {
-
-#INTEL INFO VARIABLES
 
 #NVIDIA DETECTION
 if ! command -v nvidia-smi &> /dev/null; then
@@ -112,6 +116,13 @@ fi
 fi
 done
 }
+
+#INTEL DETECTION
+if lspci | grep -qiE 'vga.*intel'; then
+SKIP_INTEL_GPU="False"
+else
+SKIP_INTEL_GPU="True"
+fi
 
 #SYSTEM INFO FUNCTION
 sys_color() {
@@ -172,7 +183,8 @@ amd_gpu_color() {
 }
 
 intel_gpu_color() {
-    echo ""
+    echo "INTEL GPU Informations"
+    echo "Model    $S $GPU_NAME_INTEL"
 }
 
 display_color() {
@@ -232,11 +244,12 @@ if [ "$SKIP_AMD_GPU" == "False" ]; then
 fetch_amd
 fi
 
-#fetch_intel
+if [ "$SKIP_INTEL_GPU" == "False" ]; then
+fetch_intel
+fi
 
 disk_color
 #disk_colorless
-
 if [ "$SKIP_NVIDIA_GPU" == "False" ]; then
 nvidia_gpu_color
 fi
@@ -244,10 +257,12 @@ fi
 if [ "$SKIP_AMD_GPU" == "False" ]; then
 amd_gpu_color
 fi
-
+#amd_gpu_colorless
+if [ "$SKIP_INTEL_GPU" == "False" ]; then
 intel_gpu_color
+fi
 #intel_gpu_colorless
 
-#display_color
-
-
+if [ "$COLORS" == "True" ]; then
+display_color
+fi
