@@ -215,9 +215,13 @@ mem_color
 
 detect_gpus
 
+if [ "$SKIP_NVIDIA_GPU" == "False" ]; then
 fetch_nvidia
+fi
 
+if [ "$SKIP_AMD_GPU" == "False" ]; then
 fetch_amd
+fi
 
 #fetch_intel
 
