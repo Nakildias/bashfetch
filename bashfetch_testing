@@ -228,11 +228,13 @@ fi
 disk_color
 #disk_colorless
 
+if [ "$SKIP_NVIDIA_GPU" == "False" ]; then
 nvidia_gpu_color
+fi
 #nvidia_gpu_colorless
-
+if [ "$SKIP_AMD_GPU" == "False" ]; then
 amd_gpu_color
-#amd_gpu_colorless
+fi
 
 intel_gpu_color
 #intel_gpu_colorless
