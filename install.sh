@@ -1,6 +1,6 @@
 #!/bin/bash
 #Checking dependencies
-sudo pacman -Sy bc lshw
+sudo pacman -Sy bc lshw dmidecode
 echo "Making bashfetch executable"
 chmod +x ./bashfetch
 echo "Moving bashfetch to /bin/bashfetch"
