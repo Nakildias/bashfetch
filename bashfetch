@@ -132,8 +132,8 @@ fi
 #SYSTEM INFO FUNCTION
 sys_color() {
     echo -e "${COLOR_MAIN}System Informations${NC}"
-    echo -e "${COLOR_SECONDARY}Distro   $S ${COLOR_INFO}$DISTRO${NC}"
-    echo -e "${COLOR_SECONDARY}Kernel   $S ${COLOR_INFO}$FILTERED_KERNEL${NC}"
+    echo -e "${COLOR_SECONDARY}Distro${NC}   $S ${COLOR_INFO}$DISTRO${NC}"
+    echo -e "${COLOR_SECONDARY}Kernel${NC}   $S ${COLOR_INFO}$FILTERED_KERNEL${NC}"
     echo ""
 }
 
