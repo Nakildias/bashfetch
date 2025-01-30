@@ -101,6 +101,7 @@ GPU_NAME_INTEL=$(glxinfo | grep "Device" | sed 's/ (.*//' | cut -c 18-)
 else
 GPU_NAME_INTEL=$(lspci | grep -i 'VGA' | grep -i 'Intel' | sed -E 's/.*: (.*)/\1/')
 fi
+}
 
 #DETECT GPUS
 detect_gpus() {
