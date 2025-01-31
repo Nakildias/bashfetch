@@ -20,9 +20,21 @@ MPATH=~/.config/bashfetch/meminfo
 
 #SYSTEM INFO VARIABLES
 DISTRO="$NAME"
-KERNEL=$(uname -r)
+KERNEL="Linux $(uname -r)"
 FILTERED_KERNEL=$(echo "$KERNEL" | cut  -d '-'  -f1)
 SHELL=$(basename $SHELL)
+
+if command -v pacman &> /dev/null; then
+PACKAGES_ARCH="$(pacman -Q | wc -l) (pacman)"
+fi
+
+if command -v apt &> /dev/null; then
+PACKAGES_DEBRIAN="$(dpkg --list | wc -l) (deb)"
+fi
+
+if command -v flatpak &> /dev/null; then
+PACKAGES_FLATPAK=", $(flatpak list | wc -l) (flatpaks)"
+fi
 
 #SESSION INFO VARIABLES
 SESSION=$XDG_SESSION_TYPE
@@ -140,6 +152,7 @@ sys_color() {
     echo -e "${COLOR_MAIN}System Informations${NC}"
     echo -e "${COLOR_SECONDARY}Distro${NC}   $S ${COLOR_INFO}$DISTRO${NC}"
     echo -e "${COLOR_SECONDARY}Kernel${NC}   $S ${COLOR_INFO}$FILTERED_KERNEL${NC}"
+    echo -e "${COLOR_SECONDARY}Packages${NC} $S ${COLOR_INFO}$PACKAGES_ARCH$PACKAGES_DEBIAN$PACKAGES_FLATPAK${NC}"
     echo ""
 }
 
@@ -274,6 +287,7 @@ sys_colorless() {
     echo "System Informations"
     echo "Distro   $S $DISTRO"
     echo "Kernel   $S $FILTERED_KERNEL"
+    echo "Packages $S $PACKAGES_ARCH$PACKAGES_DEBIAN$PACKAGES_FLATPAK"
     echo ""
 }
 
