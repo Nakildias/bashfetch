@@ -55,6 +55,10 @@ TERMINAL=$(ps -o comm= -p "$(($(ps -o ppid= -p "$(($(ps -o sid= -p "$$")))")))")
 TERMINAL_WIDTH=$(tput cols)
 TERMINAL_HEIGHT=$(tput lines)
 
+#NETWORK INFO VARIABLES
+LOCAL_IP=$(ip -o -4 addr show $INTERFACE | awk '{print $4}' | cut -d'/' -f1)
+INTERFACE=$(ip route | awk '/default/ {print $5}')
+
 if [ "$XDG_SESSION_TYPE" == "" ]; then
   SESSION="Please do not run me as sudo."
 fi
@@ -207,6 +211,13 @@ ses_color() {
     echo ""
 }
 
+net_color() {
+    echo -e "${COLOR_MAIN}Network Informations${NC}"
+    echo -e "${COLOR_SECONDARY}Local IP${NC} $S ${COLOR_INFO}$LOCAL_IP{NC}"
+    echo -e "${COLOR_SECONDARY}Net INT  ${NC}$S ${COLOR_INFO}$INTERFACE{NC}"
+    echo ""
+}
+
 cpu_color() {
     echo -e "${COLOR_MAIN}CPU Informations${NC}"
     echo -e "${COLOR_SECONDARY}Model${NC}    $S ${COLOR_INFO}$CPU_MODEL ($CPU_CORES)${NC}"
@@ -291,6 +302,7 @@ done
 if [ "$COLORS" == "True" ]; then
 sys_color
 ses_color
+net_color
 cpu_color
 mem_color
 fi
@@ -345,6 +357,13 @@ ses_colorless() {
     echo ""
 }
 
+net_colorless() {
+    echo "Network Informations"
+    echo "Local IP${NC} $S $LOCAL_IP"
+    echo "Net INT  ${NC}$S $INTERFACE"
+    echo ""
+}
+
 cpu_colorless() {
     echo "CPU Informations"
     echo "Model    $S $CPU_MODEL ($CPU_CORES)"
@@ -395,6 +414,7 @@ intel_gpu_colorless() {
 if [ "$COLORS" == "False" ]; then
 sys_colorless
 ses_colorless
+net_colorless
 cpu_colorless
 mem_colorless
 disk_colorless
