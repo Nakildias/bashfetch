@@ -172,7 +172,9 @@ cpu_color() {
     echo -e "${COLOR_MAIN}CPU Informations${NC}"
     echo -e "${COLOR_SECONDARY}Model${NC}    $S ${COLOR_INFO}$CPU_MODEL ($CPU_CORES)${NC}"
     echo -e "${COLOR_SECONDARY}Usage${NC}    $S ${COLOR_INFO}$CPU_USAGE%${NC}"
+if [ "$VM" == "False" ]; then
     echo -e "${COLOR_SECONDARY}Temp${NC}     $S ${COLOR_INFO}$CPU_TEMP${NC}"
+fi
     echo ""
 }
 
@@ -307,7 +309,9 @@ cpu_colorless() {
     echo "CPU Informations"
     echo "Model    $S $CPU_MODEL ($CPU_CORES)"
     echo "Usage    $S $CPU_USAGE%"
+if [ "$VM" == "False" ]; then
     echo "Temp     $S $CPU_TEMP"
+fi
     echo ""
 }
 
