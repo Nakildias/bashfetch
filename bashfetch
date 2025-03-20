@@ -47,6 +47,9 @@ USER=$USER
 HOSTNAME=$HOSTNAME
 DESKTOP_ENVIRONMENT=$XDG_CURRENT_DESKTOP
 TERMINAL=$(ps -o comm= -p "$(($(ps -o ppid= -p "$(($(ps -o sid= -p "$$")))")))")
+# Get terminal resolution
+TERMINAL_WIDTH=$(tput cols)
+TERMINAL_HEIGHT=$(tput lines)
 
 if [ "$XDG_SESSION_TYPE" == "" ]; then
   SESSION="Please do not run me as sudo."
@@ -196,7 +199,7 @@ ses_color() {
     echo -e "${COLOR_SECONDARY}User${NC}     $S ${COLOR_INFO}$USER${NC}"
     echo -e "${COLOR_SECONDARY}Hostname${NC} $S ${COLOR_INFO}$HOSTNAME${NC}"
     echo -e "${COLOR_SECONDARY}Shell${NC}    $S ${COLOR_INFO}$SHELL${NC}"
-    echo -e "${COLOR_SECONDARY}Terminal${NC} $S ${COLOR_INFO}$TERMINAL${NC}"
+    echo -e "${COLOR_SECONDARY}Terminal${NC} $S ${COLOR_INFO}$TERMINAL @ $TERMINAL_WIDTH * $TERMINAL_HEIGHT${NC}"
     echo ""
 }
 
@@ -334,7 +337,7 @@ ses_colorless() {
     echo "User     $S $USER"
     echo "Hostname $S $HOSTNAME"
     echo "Shell    $S $SHELL"
-    echo "Terminal $S $TERMINAL"
+    echo "Terminal $S $TERMINAL @ $TERMINAL_WIDTH * $TERMINAL_HEIGHT$"
     echo ""
 }
 
