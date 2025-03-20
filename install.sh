@@ -13,7 +13,7 @@ echo "Making bashfetch executable"
 chmod +x ./bashfetch
 echo "Moving bashfetch to /bin/bashfetch"
 echo "Root privilege is required to write into /bin"
-sudo mv ./bashfetch /bin/
+sudo cp ./bashfetch /bin/
 
 # bashfetch path
 FILE="/bin/bashfetch"
