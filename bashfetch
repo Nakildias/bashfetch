@@ -56,7 +56,7 @@ TERMINAL_WIDTH=$(tput cols)
 TERMINAL_HEIGHT=$(tput lines)
 
 #NETWORK INFO VARIABLES
-LOCAL_IP=$(ip -o -4 addr show $INTERFACE | awk '{print $4}' | cut -d'/' -f1)
+LOCAL_IP=$(ip -o -4 addr show $INTERFACE | awk '{print $4}' | cut -d'/' -f1 | grep -v '^127\.0\.0\.1$')
 INTERFACE=$(ip route | awk '/default/ {print $5}')
 
 if [ "$XDG_SESSION_TYPE" == "" ]; then
