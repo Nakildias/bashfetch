@@ -213,8 +213,8 @@ ses_color() {
 
 net_color() {
     echo -e "${COLOR_MAIN}Network Informations${NC}"
-    echo -e "${COLOR_SECONDARY}Local IP${NC} $S ${COLOR_INFO}$LOCAL_IP{NC}"
-    echo -e "${COLOR_SECONDARY}Net INT  ${NC}$S ${COLOR_INFO}$INTERFACE{NC}"
+    echo -e "${COLOR_SECONDARY}Local IP${NC} $S ${COLOR_INFO}$LOCAL_IP${NC}"
+    echo -e "${COLOR_SECONDARY}Net INT  ${NC}$S ${COLOR_INFO}$INTERFACE${NC}"
     echo ""
 }
 
@@ -359,8 +359,8 @@ ses_colorless() {
 
 net_colorless() {
     echo "Network Informations"
-    echo "Local IP${NC} $S $LOCAL_IP"
-    echo "Net INT  ${NC}$S $INTERFACE"
+    echo "Local IP $S $LOCAL_IP"
+    echo "Net INT  $S $INTERFACE"
     echo ""
 }
 
