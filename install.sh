@@ -37,5 +37,6 @@ while true; do
         echo "Invalid response. Please enter 'y' or 'n'."
     fi
 done
-echo ""
+sudo bashfetch
+clear
 echo "You should now be able to use the command "bashfetch""
