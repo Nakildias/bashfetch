@@ -23,6 +23,7 @@ DISTRO="$NAME"
 KERNEL="Linux $(uname -r)"
 FILTERED_KERNEL=$(echo "$KERNEL" | cut  -d '-'  -f1)
 SHELL=$(basename $SHELL)
+UPTIME_INFO=$(uptime -p)
 
 if command -v pacman &> /dev/null; then
 PACKAGES_ARCH="$(pacman -Q | wc -l) (pacman)"
@@ -185,6 +186,7 @@ sys_color() {
     echo -e "${COLOR_SECONDARY}Distro${NC}   $S ${COLOR_INFO}$DISTRO${NC}"
     echo -e "${COLOR_SECONDARY}Kernel${NC}   $S ${COLOR_INFO}$FILTERED_KERNEL${NC}"
     echo -e "${COLOR_SECONDARY}Packages${NC} $S ${COLOR_INFO}$PACKAGES_ARCH$PACKAGES_DEBIAN$PACKAGES_FEDORA$PACKAGES_FLATPAK${NC}"
+    echo -e "${COLOR_SECONDARY}Uptime${NC}   $S ${COLOR_INFO}$UPTIME_INFO${NC}"
     echo ""
 }
 
@@ -322,6 +324,7 @@ sys_colorless() {
     echo "Distro   $S $DISTRO"
     echo "Kernel   $S $FILTERED_KERNEL"
     echo "Packages $S $PACKAGES_ARCH$PACKAGES_DEBIAN$PACKAGES_FLATPAK"
+    echo "Uptime   $S $UPTIME_INFO"
     echo ""
 }
 
