@@ -47,8 +47,10 @@ TERMINAL=$(ps -o comm= -p "$(($(ps -o ppid= -p "$(($(ps -o sid= -p "$$")))")))")
 CPU_MODEL=$(grep -m 1 'model name' /proc/cpuinfo | cut -d':' -f2 | xargs)
 CPU_CORES=$(nproc)
 CPU_USAGE=$(top -b -n 1 | grep 'Cpu(s)' | awk '{print $2}' | sed 's/[^0-9.]//g')
+if [ "$VM" == "False" ]; then
 CPU_TEMP=$(cat /sys/class/thermal/thermal_zone*/temp | tail -n 1 )
 CPU_TEMP=$(awk "BEGIN {printf \"%.0f°C\", $CPU_TEMP / 1000}")
+fi
 
 #RAM INFO VARIABLES
 MEMORY_VENDOR=$(grep "Manufacturer:" $MPATH | head -n 1 | cut -c 16-)
