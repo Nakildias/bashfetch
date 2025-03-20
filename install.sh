@@ -46,6 +46,15 @@ while true; do
         echo "Invalid response. Please enter 'y' or 'n'."
     fi
 done
+
+echo "Creating ~/.config/bashfetch directory"
+mkdir ~/.config/bashfetch
+echo "Deleting any existing bashfetch meminfo"
+sudo rm ~/.config/bashfetch/meminfo
+echo "Root privilege is required to read ram details in dmidecode"
+sudo dmidecode --type 17 >> ~/.config/bashfetch/meminfo
+echo "RAM details saved to ~/.config/bashfetch/meminfo"
+
 sudo bashfetch > /dev/null 2>&1
 if command -v bashfetch &> /dev/null; then
 echo "Installation Successful"
