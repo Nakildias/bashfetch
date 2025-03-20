@@ -353,7 +353,7 @@ ses_colorless() {
     echo "User     $S $USER"
     echo "Hostname $S $HOSTNAME"
     echo "Shell    $S $SHELL"
-    echo "Terminal $S $TERMINAL @ $TERMINAL_WIDTH * $TERMINAL_HEIGHT$"
+    echo "Terminal $S $TERMINAL @ $TERMINAL_WIDTH * $TERMINAL_HEIGHT"
     echo ""
 }
 
