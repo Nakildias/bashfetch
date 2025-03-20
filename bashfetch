@@ -26,19 +26,23 @@ SHELL=$(basename $SHELL)
 UPTIME_INFO=$(uptime -p)
 
 if command -v pacman &> /dev/null; then
-PACKAGES_ARCH="$(pacman -Q | wc -l) (pacman)"
+    PACKAGES_ARCH="$(pacman -Q | wc -l) (pacman)"
 fi
 
 if command -v dnf &> /dev/null; then
-PACKAGES_FEDORA="$(rpm -qa | wc -l) (rpm)"
+    PACKAGES_FEDORA="$(rpm -qa | wc -l) (rpm)"
 fi
 
 if command -v apt &> /dev/null; then
-PACKAGES_DEBIAN="$(dpkg --list | wc -l) (deb)"
+    PACKAGES_DEBIAN="$(dpkg --list | wc -l) (deb)"
 fi
 
 if command -v flatpak &> /dev/null; then
-PACKAGES_FLATPAK=", $(flatpak list | wc -l) (flatpaks)"
+    PACKAGES_FLATPAK=", $(flatpak list | wc -l) (flatpaks)"
+fi
+
+if command -v emerge &> /dev/null; then
+    PACKAGES_GENTOO="$(qlist -I | wc -l) (emerge)"
 fi
 
 #SESSION INFO VARIABLES
@@ -188,7 +192,7 @@ sys_color() {
     echo -e "${COLOR_MAIN}System Informations${NC}"
     echo -e "${COLOR_SECONDARY}Distro${NC}   $S ${COLOR_INFO}$DISTRO${NC}"
     echo -e "${COLOR_SECONDARY}Kernel${NC}   $S ${COLOR_INFO}$FILTERED_KERNEL${NC}"
-    echo -e "${COLOR_SECONDARY}Packages${NC} $S ${COLOR_INFO}$PACKAGES_ARCH$PACKAGES_DEBIAN$PACKAGES_FEDORA$PACKAGES_FLATPAK${NC}"
+    echo -e "${COLOR_SECONDARY}Packages${NC} $S ${COLOR_INFO}$PACKAGES_ARCH$PACKAGES_DEBIAN$PACKAGES_FEDORA$PACKAGES_GENTOO$PACKAGES_FLATPAK${NC}"
     echo -e "${COLOR_SECONDARY}Uptime${NC}   $S ${COLOR_INFO}$UPTIME_INFO${NC}"
     echo ""
 }
@@ -326,7 +330,7 @@ sys_colorless() {
     echo "System Informations"
     echo "Distro   $S $DISTRO"
     echo "Kernel   $S $FILTERED_KERNEL"
-    echo "Packages $S $PACKAGES_ARCH$PACKAGES_DEBIAN$PACKAGES_FLATPAK"
+    echo "Packages $S $PACKAGES_ARCH$PACKAGES_DEBIAN$PACKAGES_GENTOO$PACKAGES_FLATPAK"
     echo "Uptime   $S $UPTIME_INFO"
     echo ""
 }
