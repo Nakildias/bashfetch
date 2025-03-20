@@ -44,7 +44,7 @@ DESKTOP_ENVIRONMENT=$XDG_CURRENT_DESKTOP
 TERMINAL=$(ps -o comm= -p "$(($(ps -o ppid= -p "$(($(ps -o sid= -p "$$")))")))")
 
 if [ "$XDG_SESSION_TYPE" == "" ]; then
-  SESSION="Unknown or Root"
+  SESSION="Please do not run me as sudo."
 fi
 
 if [ "$XDG_SESSION_TYPE" == "tty" ]; then
@@ -59,6 +59,14 @@ fi
 
 if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
   SESSION=SSH
+fi
+
+if [ "$TERMINAL" == "login" ]; then
+  TERMINAL=TTY
+fi
+
+if [ "$TERMINAL" == "sudo" ]; then
+  TERMINAL="Please do not run me as sudo."
 fi
 
 #CPU INFO VARIABLES
