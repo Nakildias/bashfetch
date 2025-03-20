@@ -43,13 +43,13 @@ HOSTNAME=$HOSTNAME
 DESKTOP_ENVIRONMENT=$XDG_CURRENT_DESKTOP
 TERMINAL=$(ps -o comm= -p "$(($(ps -o ppid= -p "$(($(ps -o sid= -p "$$")))")))")
 
-#SERVER INFO & Style
-S=> #Separators
 if [ "$XDG_SESSION_TYPE" == "" ]; then
 SESSION=TTY
 fi
 if [ "$XDG_CURRENT_DESKTOP" == "" ]; then
 DESKTOP_ENVIRONMENT=Server
+#SERVER INFO & Style
+S=">" #Separators
 fi
 
 #CPU INFO VARIABLES
