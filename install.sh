@@ -2,13 +2,18 @@
 #Checking dependencies
 #DEPENDENCIES
  #ARCH LINUX
+if command -v pacman &> /dev/null; then
   sudo pacman -Sy bc lshw dmidecode
+fi
  #DEBIAN
-  #WIP
+if command -v apt &> /dev/null; then
+  sudo apt update && sudo apt install bc lshw dmidecode
+fi
  #FEDORA
-  #WIP
- #GENTOO
-  #WIP
+if command -v dnf &> /dev/null; then
+  sudo dnf install bc lshw dmidecode
+fi
+
 echo "Making bashfetch executable"
 chmod +x ./bashfetch
 echo "Moving bashfetch to /bin/bashfetch"
@@ -37,6 +42,10 @@ while true; do
         echo "Invalid response. Please enter 'y' or 'n'."
     fi
 done
-sudo bashfetch
-clear
+sudo bashfetch > /dev/null 2>&1
+if command -v bashfetch &> /dev/null; then
+echo "Installation Successful"
 echo "You should now be able to use the command "bashfetch""
+else
+echo "Installation Failed"
+fi
