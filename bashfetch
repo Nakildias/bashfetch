@@ -44,12 +44,21 @@ DESKTOP_ENVIRONMENT=$XDG_CURRENT_DESKTOP
 TERMINAL=$(ps -o comm= -p "$(($(ps -o ppid= -p "$(($(ps -o sid= -p "$$")))")))")
 
 if [ "$XDG_SESSION_TYPE" == "" ]; then
-SESSION=TTY
+  SESSION="Unknown or Root"
 fi
+
+if [ "$XDG_SESSION_TYPE" == "tty" ]; then
+  SESSION="TTY"
+fi
+
 if [ "$XDG_CURRENT_DESKTOP" == "" ]; then
-DESKTOP_ENVIRONMENT=Server
+  DESKTOP_ENVIRONMENT=Server
 #SERVER INFO & Style
 S=">" #Separators
+fi
+
+if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
+  SESSION=SSH
 fi
 
 #CPU INFO VARIABLES
