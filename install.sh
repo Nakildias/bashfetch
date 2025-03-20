@@ -15,7 +15,7 @@ if command -v dnf &> /dev/null; then
 fi
  #GENTOO
 if command -v emerge &> /dev/null; then
-  sudo emerge --sync && sudo emerge --ask sys-apps/bc sys-apps/lshw sys-apps/dmidecode
+  sudo emerge --sync && sudo emerge --ask sys-devel/bc sys-apps/lshw sys-apps/dmidecode
 fi
 
 echo "Making bashfetch executable"
