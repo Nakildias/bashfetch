@@ -49,12 +49,12 @@ fi
 
 if [ "$XDG_SESSION_TYPE" == "tty" ]; then
   SESSION="TTY"
+  #TTY INFO & Style
+  S=">" #Separators
 fi
 
 if [ "$XDG_CURRENT_DESKTOP" == "" ]; then
   DESKTOP_ENVIRONMENT=Server
-#SERVER INFO & Style
-S=">" #Separators
 fi
 
 if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then
