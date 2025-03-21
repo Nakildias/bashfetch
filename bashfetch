@@ -58,6 +58,7 @@ TERMINAL_HEIGHT=$(tput lines)
 #NETWORK INFO VARIABLES
 LOCAL_IP=$(ip -o -4 addr show $INTERFACE | awk '{print $4}' | cut -d'/' -f1 | grep -v '^127\.0\.0\.1$' | paste -sd ' ' -)
 INTERFACE=$(ip route | awk '/default/ {print $5}')
+PING=$(ping -c 1 google.com | grep 'time=' | awk -F'time=' '{print $2}' | awk '{print $1}')
 
 if [ "$XDG_SESSION_TYPE" == "" ]; then
   SESSION="Please do not run me as sudo."
@@ -215,6 +216,7 @@ net_color() {
     echo -e "${COLOR_MAIN}Network Informations${NC}"
     echo -e "${COLOR_SECONDARY}Local IP${NC} $S ${COLOR_INFO}$LOCAL_IP${NC}"
     echo -e "${COLOR_SECONDARY}Net INT  ${NC}$S ${COLOR_INFO}$INTERFACE${NC}"
+    echo -e "${COLOR_SECONDARY}Latency  ${NC}$S ${COLOR_INFO}${PING}ms${NC}"
     echo ""
 }
 
@@ -361,6 +363,7 @@ net_colorless() {
     echo "Network Informations"
     echo "Local IP $S $LOCAL_IP"
     echo "Net INT  $S $INTERFACE"
+    echo "Latency  $S ${PING}ms"
     echo ""
 }
 
