@@ -3,19 +3,19 @@
 #DEPENDENCIES
  #ARCH LINUX
 if command -v pacman &> /dev/null; then
-  sudo pacman -Sy bc lshw dmidecode
+  sudo pacman -Sy bc lshw dmidecode mesa-utils
 fi
  #DEBIAN
 if command -v apt &> /dev/null; then
-  sudo apt update && sudo apt install bc lshw dmidecode
+  sudo apt update && sudo apt install bc lshw dmidecode mesa-utils
 fi
  #FEDORA
 if command -v dnf &> /dev/null; then
-  sudo dnf install bc lshw dmidecode
+  sudo dnf install bc lshw dmidecode glx-utils
 fi
  #GENTOO
 if command -v emerge &> /dev/null; then
-  sudo emerge --sync && sudo emerge --ask sys-devel/bc sys-apps/lshw sys-apps/dmidecode
+  sudo emerge --sync && sudo emerge --ask sys-devel/bc sys-apps/lshw sys-apps/dmidecode x11-apps/mesa-progs
 fi
 
 echo "Making bashfetch executable"
