@@ -139,15 +139,58 @@ GPU_TOTAL_MEM_NVIDIA=$(nvidia-smi --query-gpu=memory.total --format=csv | tail -
 }
 
 fetch_amd() {
-#AMD INFO VARIABLES
-GPU_TEMP_AMD=$(cat $AMDGPU_PATH/temp1_input)
-GPU_TEMP_AMD=$(awk "BEGIN {printf \"%.0f°C\", $GPU_TEMP_AMD / 1000}")
-GPU_USAGE_AMD=$(cat $AMDGPU_PATH/device/gpu_busy_percent)
-GPU_USED_MEM_AMD=$(cat $AMDGPU_PATH/device/mem_info_vram_used)
-GPU_TOTAL_MEM_AMD=$(cat $AMDGPU_PATH/device/mem_info_vram_total)
-AMD_VRAM_USED_GIB=$(awk "BEGIN {printf \"%.0f MiB\", $GPU_USED_MEM_AMD / 1125000}")
-AMD_VRAM_TOTAL_GIB=$(awk "BEGIN {printf \"%.0f MiB\", $GPU_TOTAL_MEM_AMD / 1125000}")
-GPU_NAME_AMD=$(glxinfo | grep "Device" | sed 's/ (.*//' | cut -c 13-)
+    # AMD INFO VARIABLES
+    # Ensure AMDGPU_PATH is set by detect_gpus before this function is called.
+    # The SKIP_AMD_GPU flag should also prevent this function from running if no AMD GPU is detected.
+
+    local temp_val
+    temp_val=$(cat "$AMDGPU_PATH/temp1_input" 2>/dev/null)
+    if [[ -n "$temp_val" && "$temp_val" =~ ^[0-9]+$ ]]; then
+        GPU_TEMP_AMD=$(awk "BEGIN {printf \"%.0f°C\", $temp_val / 1000}")
+    else
+        GPU_TEMP_AMD="N/A"
+    fi
+
+    GPU_USAGE_AMD=$(cat "$AMDGPU_PATH/device/gpu_busy_percent" 2>/dev/null)
+    if [[ -z "$GPU_USAGE_AMD" ]]; then # gpu_busy_percent might be empty if file not readable
+        GPU_USAGE_AMD="N/A"
+    fi
+
+    local used_mem_val
+    local total_mem_val
+    used_mem_val=$(cat "$AMDGPU_PATH/device/mem_info_vram_used" 2>/dev/null)
+    total_mem_val=$(cat "$AMDGPU_PATH/device/mem_info_vram_total" 2>/dev/null)
+
+    # Using your original VRAM calculation logic
+    if [[ -n "$used_mem_val" && "$used_mem_val" =~ ^[0-9]+$ ]]; then
+        # Assuming the divisor 1125000 is intentional for your desired output format
+        AMD_VRAM_USED_GIB=$(awk "BEGIN {printf \"%.0f MiB\", $used_mem_val / 1125000}")
+    else
+        AMD_VRAM_USED_GIB="N/A"
+    fi
+
+    if [[ -n "$total_mem_val" && "$total_mem_val" =~ ^[0-9]+$ ]]; then
+        # Assuming the divisor 1125000 is intentional
+        AMD_VRAM_TOTAL_GIB=$(awk "BEGIN {printf \"%.0f MiB\", $total_mem_val / 1125000}")
+    else
+        AMD_VRAM_TOTAL_GIB="N/A"
+    fi
+
+    # Attempt to get GPU name using glxinfo
+    local name_attempt="" # Initialize to empty string
+
+    # Check if glxinfo command is available
+    if command -v glxinfo &>/dev/null; then
+        # Attempt to get the device name, suppress errors from glxinfo itself (like "unable to open display")
+        name_attempt=$(glxinfo 2>/dev/null | grep "Device" | sed 's/ (.*//' | cut -c 13-)
+    fi
+
+    # If name_attempt is still empty (glxinfo not found, failed, or grep found nothing), set to generic
+    if [ -z "$name_attempt" ]; then
+        GPU_NAME_AMD="Generic AMD GPU"
+    else
+        GPU_NAME_AMD="$name_attempt"
+    fi
 }
 
 fetch_intel() {
